@@ -2,6 +2,7 @@ package server
 
 import (
 	"encoding/json"
+	"job-listener/internal/database"
 	"log"
 	"net/http"
 )
@@ -76,7 +77,7 @@ func (s *Server) healthHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *Server) getAppsHandler(w http.ResponseWriter, r *http.Request) {
-	resp, err := json.Marshal(s.db.Health())
+	resp, err := json.Marshal(database.Health(s.db.db))
 	if err != nil {
 		http.Error(w, "Failed to marshal health check response", http.StatusInternalServerError)
 		return
