@@ -20,6 +20,11 @@ type CreateAppRequest struct {
 	Name string `json:"name"`
 }
 
+type UpdateAppRequest struct {
+	ID   int    `json:"id"`
+	Name string `json:"name"`
+}
+
 func ScanIntoApp(rows *sql.Rows) (*App, error) {
 	app := &App{}
 	err := rows.Scan(
@@ -40,15 +45,15 @@ func newApp(name string) *App {
 	}
 }
 
-func getAllApps(s *database.Service) ([]App, error) {
+func GetAllApps(s *database.DBStore) ([]App, error) {
 	query := `SELECT * FROM apps ORDER BY id DESC`
-	rows, err := s.db.Query(query)
+	rows, err := s.Db.Query(query)
 	if err != nil {
 		return nil, err
 	}
-	apps := []models.App{}
+	apps := []App{}
 	for rows.Next() {
-		a := models.App{}
+		a := App{}
 		err := rows.Scan(&a.ID, &a.Name, &a.CreatedAt, &a.UpdatedAt)
 		if err != nil {
 			return nil, err
@@ -64,27 +69,27 @@ func getAllApps(s *database.Service) ([]App, error) {
 	return apps, nil
 }
 
-func (s *Service) getAppByID(id int) (*models.App, error) {
+func GetAppByID(s *database.DBStore, id int) (*App, error) {
 	query := `SELECT * FROM apps WHERE id = $1`
-	rows, err := s.db.Query(query, id)
+	rows, err := s.Db.Query(query, id)
 
 	if err != nil {
 		return nil, err
 	}
 
 	for rows.Next() {
-		return models.ScanIntoApp(rows)
+		return ScanIntoApp(rows)
 	}
 
 	return nil, fmt.Errorf("Application not found", id)
 }
 
-func (s *Service) createApp(app *models.App) error {
+func createApp(s *database.DBStore, app *App) error {
 	query := `INSERT INTO apps
 	(name, created_at, updated_at)
 	VALUES
 	($1, $2, $3)`
-	record, err := s.db.Query(query,
+	record, err := s.Db.Query(query,
 		app.Name,
 		app.CreatedAt,
 		app.UpdatedAt)

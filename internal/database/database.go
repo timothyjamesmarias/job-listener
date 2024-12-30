@@ -15,7 +15,7 @@ import (
 
 type DBStore struct {
 	url string
-	db  *sql.DB
+	Db  *sql.DB
 }
 
 func InitDB() *DBStore {
@@ -29,11 +29,12 @@ func InitDB() *DBStore {
 
 	return &DBStore{
 		url: dburl,
-		db:  db,
+		Db:  db,
 	}
 }
 
-func Health(db *sql.DB) map[string]string {
+func Health(s *DBStore) map[string]string {
+	db := s.Db
 	ctx, cancel := context.WithTimeout(context.Background(), 1*time.Second)
 	defer cancel()
 
@@ -84,5 +85,5 @@ func Health(db *sql.DB) map[string]string {
 
 func Close(s *DBStore) error {
 	log.Printf("Disconnected from database: %s", s.url)
-	return s.db.Close()
+	return s.Db.Close()
 }
